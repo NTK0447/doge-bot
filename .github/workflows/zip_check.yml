@@ -1,0 +1,61 @@
+name: Consistency Check (Manifest/Summary/Unmapped)
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  check-manifest:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: pip install pyyaml requests jq
+
+      - name: Run consistency check
+        id: check
+        run: |
+          echo "🔎 Running consistency check..."
+          python3 .github/scripts/compare_zip_repo.py > check.log 2>&1
+
+      # 成功/失敗まとめて通知
+      - name: Notify Discord (with result)
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            CONTENT="✅ GitHub Actions - Consistency Check Result: Success"
+          else
+            CONTENT="❌ GitHub Actions - Consistency Check Result: Failed"
+            LOG=$(head -n 30 check.log 2>/dev/null || echo "No log available")
+            CONTENT="$CONTENT\n\`\`\`\n$LOG\n\`\`\`"
+          fi
+
+          echo "Sending to Discord..."
+          curl -sS -H "Content-Type: application/json" \
+            -d "$(echo '{}' | jq --arg c "$CONTENT" '.content=$c')" \
+            "${{ secrets.DISCORD_WEBHOOK_ZIPCHECK }}"
+
+      # 成功時に7日以上前のzip/manifestを削除
+      - name: Cleanup old backups (7+ days)
+        if: success()
+        run: |
+          echo "🧹 Cleaning up old backup files..."
+          if [ -d backups ]; then
+            find backups -type f -mtime +7 -name "*.zip" -exec rm -f {} \;
+          fi
+          if [ -d manifest ]; then
+            find manifest -type f -mtime +7 -name "*.txt" -exec rm -f {} \;
+          fi

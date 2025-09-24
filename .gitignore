@@ -1,0 +1,39 @@
+# === Python キャッシュ系 ===
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# === 仮想環境 ===
+venv/
+.envrc
+
+# === 環境設定ファイル（秘匿情報） ===
+.env
+env/.env
+
+# === ログ & バックアップ ===
+logs/
+backups/
+*.log
+
+# === Docker ===
+*.pid
+*.seed
+*.swp
+
+# === パッチ・検証用ファイル ===
+patch_*.txt
+project_snapshot_*.zip
+manifest_*.txt
+unmapped_*.txt
+summary_*.txt
+diff_*.txt
+
+# === OS依存ファイル ===
+.DS_Store
+Thumbs.db
+
+# ignore patch zips
+project_patch_*.zip
+backups/project_patch_*.zip

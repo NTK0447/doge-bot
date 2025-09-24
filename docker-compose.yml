@@ -1,0 +1,34 @@
+services:
+  doge-bot-dev:
+    build:
+      context: .
+      target: dev
+    container_name: doge-bot-dev
+    working_dir: /app
+    restart: unless-stopped
+    # 開発はコードをマウントしてホットリロード
+    volumes:
+      - .:/app
+      - ./logs:/app/logs
+    env_file:
+      - ./env/.env
+    environment:
+      LOG_LEVEL: DEBUG
+      DRY_RUN: "true"
+      SYNC_POS_FROM_EXCHANGE: "false"
+      POSITION_COOLDOWN_SEC: "30"
+
+  doge-bot-prod:
+    build:
+      context: .
+      target: runtime
+    container_name: doge-bot
+    working_dir: /app
+    restart: unless-stopped
+    # 本番はログのみホストへ
+    volumes:
+      - ./logs:/app/logs
+    env_file:
+      - ./env/.env
+    environment:
+      LOG_LEVEL: INFO

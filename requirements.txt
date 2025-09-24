@@ -1,0 +1,13 @@
+requests
+websocket-client
+ta
+pandas
+numpy
+matplotlib
+python-dotenv
+discord-webhook
+websocket-client
+requests
+python-dotenv
+pytz
+PyYAML

@@ -1,0 +1,26 @@
+# 開発・デバッグ用ライブラリ
+ipython
+ipdb
+jupyter
+
+# 静的解析・コード整形
+black
+flake8
+isort
+mypy
+
+# テスト系
+pytest
+pytest-cov
+
+# 補助ツール
+python-dotenv        # .env 読み込み（本番でも使うなら requirements.txt に移動OK）
+requests             # Discord通知などのHTTPリクエスト
+matplotlib           # ガントチャート生成
+pillow               # 画像処理
+pyyaml               # roadmap.yaml パース用
+rich                 # ログを見やすくする（任意）
+
+# Notebook可視化やレポート用（任意）
+seaborn
+pandas

@@ -1,0 +1,31 @@
+# Python 仮想環境
+venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# ログやバックアップ
+logs/*
+!logs/.gitkeep
+*.log
+*.zip
+*.tar
+*.gz
+*.part.*
+
+# Git / エディタ関連
+.git
+.gitignore
+*.swp
+*.swo
+*.DS_Store
+
+# その他不要ファイル
+*.bak
+*.tmp
+
+# vim/nano などのスワップファイル
+*.swp
+*.swo
+.*swp

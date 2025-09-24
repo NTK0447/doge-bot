@@ -1,0 +1,127 @@
+stages:
+  - name: Stage1 暴走抑止
+    status: done
+    tasks:
+      - id: S1-1
+        title: MAX_OPEN_ORDERS 実装
+        status: done
+        start: 2025-09-06
+        end:   2025-09-06
+      - id: S1-2
+        title: POSITION_COOLDOWN_SEC 導入
+        status: done
+        start: 2025-09-06
+        end:   2025-09-06
+      - id: S1-3
+        title: ピラミッド制御
+        status: done
+        start: 2025-09-06
+        end:   2025-09-06
+
+  - name: Stage2 部分約定の追撃
+    status: done
+    tasks:
+      - id: S2-1
+        title: IOC注文のリトライ
+        status: done
+        start: 2025-09-07
+        end:   2025-09-07
+      - id: S2-2
+        title: スリッページ幅の段階拡大
+        status: done
+        start: 2025-09-07
+        end:   2025-09-07
+
+  - name: Stage3 サーキットブレーカ
+    status: done
+    tasks:
+      - id: S3-1
+        title: 急変検知ロジック
+        status: done
+        start: 2025-09-07
+        end:   2025-09-07
+      - id: S3-2
+        title: Discord通知
+        status: done
+        start: 2025-09-07
+        end:   2025-09-07
+
+  - name: Stage4 特徴量拡張（WS）
+    status: wip
+    tasks:
+      - id: S4-1
+        title: features.py に板厚/成行偏りを追加
+        status: wip
+        start: 2025-09-09
+        end:   2025-09-11
+      - id: S4-2
+        title: core.py 連携
+        status: todo
+
+  - name: Stage5 戦略セレクタ
+    status: todo
+    tasks:
+      - id: S5-1
+        title: LinUCB 導入
+        status: todo
+      - id: S5-2
+        title: 複数戦略選択
+        status: todo
+
+  - name: Stage6〜8 神モード準備
+    status: todo
+    tasks:
+      - id: S6-1
+        title: 自動チューニング
+        status: todo
+      - id: S7-1
+        title: 自律進化
+        status: todo
+      - id: S8-1
+        title: PDFレポート生成
+        status: todo
+
+  - name: StageX メンテナンス・補助
+    status: todo
+    tasks:
+      - id: SX-1
+        title: スクリプト群メンテナンス（build/dev/run/prod）
+        status: todo
+        target_files:
+          - build.sh
+          - dev.sh
+          - run.sh
+          - prod.sh
+        bundle: StageX_maintenance
+        est_hours: 1
+      - id: SX-2
+        title: scripts/*.sh, *.py 整備
+        status: todo
+        target_files:
+          - "scripts/*"
+        bundle: StageX_maintenance
+        est_hours: 2
+      - id: SX-3
+        title: docs/整理（PARENT_VIEW.md, gantt.png, ENV_MANAGEMENT.md）
+        status: todo
+        target_files:
+          - "docs/*"
+        bundle: StageX_maintenance
+        est_hours: 1
+
+goals:
+  Monthly Profit (安定ゾーン): "$50〜$200"
+  Capital Efficiency: "$20〜30 証拠金でも運用可"
+  Expansion: "戦略複数並列で月数百ドル規模"
+
+final_goal: "神モード（自律・自己進化型BOT）"
+
+bundles:
+  - name: StageX_maintenance
+    files:
+      - build.sh
+      - dev.sh
+      - run.sh
+      - prod.sh
+      - "scripts/*"
+      - "docs/*"
