@@ -1,6 +1,7 @@
 # bot/strategies/strategy01.py
 from __future__ import annotations
 import logging
+from typing import Dict, Any
 
 class Strategy01:
     """
@@ -14,8 +15,8 @@ class Strategy01:
         self.logger = logger or logging.getLogger("DogeBot")
 
         # --- RSIしきい値 ---
-        self.buy_th  = float(getattr(config, "RSI_BUY_THRESHOLD", 20))
-        self.sell_th = float(getattr(config, "RSI_SELL_THRESHOLD", 80))
+        self.buy_th  = float(getattr(config, "RSI_BUY", 35))
+        self.sell_th = float(getattr(config, "RSI_SELL", 65))
         self.exit_long  = float(getattr(config, "RSI_EXIT_LONG", 55))
         self.exit_short = float(getattr(config, "RSI_EXIT_SHORT", 45))
 
@@ -25,7 +26,8 @@ class Strategy01:
 
         self.order_size = float(getattr(config, "ORDER_SIZE", 100))
 
-    # --- 開くべきか ---
+    # ========== 開く/閉じる判定 ==========
+
     def should_open_position(self, indicators: dict, position: dict) -> bool:
         rsi   = indicators.get("rsi")
         depth = indicators.get("depth_imbalance") or indicators.get("depth_imb_5")
@@ -50,74 +52,48 @@ class Strategy01:
             taker is not None and taker < -self.taker_thr
         )
 
-        self.logger.debug(
-            f"[Strategy01.should_open] rsi={rsi}, depth={depth}, taker={taker}, "
-            f"long_ok={long_ok}, short_ok={short_ok}"
-        )
+        return bool(long_ok or short_ok)
 
-        return long_ok or short_ok
+    def should_close_position(self, indicators: dict, position: dict) -> bool:
+        if not position or not position.get("is_open"):
+            return False
 
-    # --- シグナル生成（向きと枚数） ---
-    def generate_signal(self, indicators: dict, position: dict) -> dict:
+        side = position.get("side")
+        rsi  = indicators.get("rsi")
+        if rsi is None:
+            return False
+
+        # ロング→RSIがEXIT_LONGを超えたら利確/撤退
+        if side == "Buy" and rsi >= self.exit_long:
+            return True
+        # ショート→RSIがEXIT_SHORTを下回ったら利確/撤退
+        if side == "Sell" and rsi <= self.exit_short:
+            return True
+
+        return False
+
+    # ========== シグナル生成 ==========
+
+    def generate_signal(self, indicators: dict, position: dict) -> Dict[str, Any]:
+        """
+        方向と枚数を返す。ロング/ショートのどちらか一方。
+        """
+        if position and position.get("is_open"):
+            return {}
+
         rsi        = indicators.get("rsi")
         depth      = indicators.get("depth_imbalance") or indicators.get("depth_imb_5")
         taker      = indicators.get("taker_bias")
         spread_bps = indicators.get("spread_bps")
         mom_1      = indicators.get("mom_1s")
         mom_5      = indicators.get("mom_5s")
-        vol        = indicators.get("volatility")
-        slope      = indicators.get("trend_slope")
-        liq        = indicators.get("liq_ratio")
 
-        side = "None"
-        if rsi is not None:
-            if (
-                rsi < self.buy_th
-                and depth is not None and depth > +self.depth_thr
-                and taker is not None and taker > +self.taker_thr
-            ):
-                side = "Buy"
-            elif (
-                rsi > self.sell_th
-                and depth is not None and depth < -self.depth_thr
-                and taker is not None and taker < -self.taker_thr
-            ):
-                side = "Sell"
+        if rsi is None or depth is None or taker is None:
+            return {}
 
-        # noteを拡張
-        note = (
-            f"rsi={rsi if rsi is not None else 'NA'}, "
-            f"depth={depth}, taker={taker}, "
-            f"spread_bps={spread_bps}, mom1={mom_1}, mom5={mom_5}, "
-            f"vol={vol}, slope={slope}, liq={liq}"
-        )
+        if rsi < self.buy_th and depth > +self.depth_thr and taker > +self.taker_thr:
+            return {"side": "Buy",  "qty": self.order_size, "meta": {"spr_bps": spread_bps, "m1": mom_1, "m5": mom_5}}
+        if rsi > self.sell_th and depth < -self.depth_thr and taker < -self.taker_thr:
+            return {"side": "Sell", "qty": self.order_size, "meta": {"spr_bps": spread_bps, "m1": mom_1, "m5": mom_5}}
 
-        self.logger.debug(f"[Strategy01.generate_signal] side={side}, note={note}")
-
-        return {
-            "side": side,
-            "qty": self.order_size,
-            "maker": False,
-            "note": note,
-        }
-
-    # --- 閉じるべきか ---
-    def should_close_position(self, indicators: dict, position: dict) -> bool:
-        rsi = indicators.get("rsi")
-        if rsi is None or not position or not position.get("is_open"):
-            self.logger.debug(f"[Strategy01.should_close] skip close: rsi={rsi}, position={position}")
-            return False
-
-        side = position.get("side")
-        if side == "Buy":
-            close_ok = rsi >= self.exit_long
-        elif side == "Sell":
-            close_ok = rsi <= self.exit_short
-        else:
-            close_ok = False
-
-        self.logger.debug(f"[Strategy01.should_close] side={side}, rsi={rsi}, close_ok={close_ok}")
-        return close_ok
-
-# FIXME: RSI/BB に基づくクローズ条件（Strategy02）導入予定
-# FIXME: features.py (WS特徴量) の depth/taker/spread を活用するロジック未実装
+        return {}
